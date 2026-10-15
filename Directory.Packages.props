@@ -3,11 +3,11 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="EventBank.BuildingBlocks.Domain" Version="1.0.0" />
-    <PackageVersion Include="EventBank.BuildingBlocks.Application" Version="1.0.0" />
-    <PackageVersion Include="EventBank.BuildingBlocks.EventSourcing" Version="1.0.0" />
-    <PackageVersion Include="EventBank.BuildingBlocks.Messaging" Version="1.0.0" />
-    <PackageVersion Include="EventBank.BuildingBlocks.Web" Version="1.0.0" />
+    <PackageVersion Include="EventBank.BuildingBlocks.Domain" Version="1.1.0" />
+    <PackageVersion Include="EventBank.BuildingBlocks.Application" Version="1.1.0" />
+    <PackageVersion Include="EventBank.BuildingBlocks.EventSourcing" Version="1.1.0" />
+    <PackageVersion Include="EventBank.BuildingBlocks.Messaging" Version="1.1.0" />
+    <PackageVersion Include="EventBank.BuildingBlocks.Web" Version="1.1.0" />
     <PackageVersion Include="EventBank.Contracts" Version="1.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.13" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13" />
