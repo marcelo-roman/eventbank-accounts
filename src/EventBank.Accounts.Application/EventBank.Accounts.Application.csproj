@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\EventBank.Accounts.Domain\EventBank.Accounts.Domain.csproj" />
+    <PackageReference Include="EventBank.BuildingBlocks.Application" />
+  </ItemGroup>
+</Project>

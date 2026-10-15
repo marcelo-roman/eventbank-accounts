@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="EventBank.BuildingBlocks.Domain" Version="1.0.0" />
+    <PackageVersion Include="EventBank.BuildingBlocks.Application" Version="1.0.0" />
+    <PackageVersion Include="EventBank.BuildingBlocks.EventSourcing" Version="1.0.0" />
+    <PackageVersion Include="EventBank.BuildingBlocks.Messaging" Version="1.0.0" />
+    <PackageVersion Include="EventBank.BuildingBlocks.Web" Version="1.0.0" />
+    <PackageVersion Include="EventBank.Contracts" Version="1.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
+    <PackageVersion Include="Npgsql" Version="10.0.3" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+  </ItemGroup>
+</Project>
