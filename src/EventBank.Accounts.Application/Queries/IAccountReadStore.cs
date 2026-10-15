@@ -2,7 +2,7 @@ namespace EventBank.Accounts.Application.Queries;
 
 public interface IAccountReadStore
 {
-    Task<IReadOnlyList<AccountSummaryView>> ListAccounts(CancellationToken cancellationToken);
+    Task<IReadOnlyList<AccountSummaryView>> ListAccounts(Guid? ownerId, CancellationToken cancellationToken);
 
     Task<AccountSummaryView?> FindAccount(Guid accountId, CancellationToken cancellationToken);
 

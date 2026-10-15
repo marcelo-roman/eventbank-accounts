@@ -9,10 +9,15 @@ public sealed class BankAccount : AggregateRoot<AccountId>
     private readonly HashSet<TransferId> _answeredCredits = [];
     private readonly Dictionary<TransferId, decimal> _debitedTransfers = [];
     private readonly HashSet<TransferId> _refundedTransfers = [];
+    private readonly HashSet<ChargeId> _answeredCharges = [];
 
     private BankAccount()
     {
     }
+
+    public OwnerId Owner { get; private set; }
+
+    public AccountNumber Number { get; private set; } = null!;
 
     public AccountHolder Holder { get; private set; } = null!;
 
@@ -22,12 +27,14 @@ public sealed class BankAccount : AggregateRoot<AccountId>
 
     public AccountStatus Status { get; private set; }
 
-    public static BankAccount Open(AccountId id, AccountHolder holder, Currency currency)
+    public static BankAccount Open(AccountId id, OwnerId owner, AccountHolder holder, Currency currency, AccountNumber number)
     {
         var account = new BankAccount();
-        account.Raise(new AccountOpened(id.Value, holder.Name, currency.Code));
+        account.Raise(new AccountOpened(id.Value, owner.Value, holder.Name, currency.Code, number.Branch, number.Number));
         return account;
     }
+
+    public bool IsOwnedBy(Guid customerId) => Owner.Value == customerId;
 
     public void Deposit(Money amount)
     {
@@ -95,6 +102,23 @@ public sealed class BankAccount : AggregateRoot<AccountId>
         Raise(new TransferRefunded(Id.Value, transferId.Value, amount));
     }
 
+    public void Charge(ChargeId chargeId, Money amount, string description)
+    {
+        if (_answeredCharges.Contains(chargeId))
+        {
+            return;
+        }
+
+        var declineReason = DebitDeclineReason(amount);
+        if (declineReason is not null)
+        {
+            Raise(new AccountChargeDeclined(Id.Value, chargeId.Value, amount.Amount, description, declineReason));
+            return;
+        }
+
+        Raise(new AccountCharged(Id.Value, chargeId.Value, amount.Amount, description));
+    }
+
     public void Close()
     {
         EnsureOpen();
@@ -112,6 +136,8 @@ public sealed class BankAccount : AggregateRoot<AccountId>
         {
             case AccountOpened opened:
                 Id = new AccountId(opened.AccountId);
+                Owner = new OwnerId(opened.OwnerId);
+                Number = AccountNumber.Restore(opened.Branch, opened.Number);
                 Holder = AccountHolder.Restore(opened.Holder);
                 Currency = Currency.Restore(opened.Currency);
                 Balance = Money.Zero(Currency);
@@ -141,6 +167,13 @@ public sealed class BankAccount : AggregateRoot<AccountId>
             case TransferRefunded refunded:
                 Balance = Balance.Add(refunded.Amount);
                 _refundedTransfers.Add(new TransferId(refunded.TransferId));
+                break;
+            case AccountCharged charged:
+                Balance = Balance.Subtract(charged.Amount);
+                _answeredCharges.Add(new ChargeId(charged.ChargeId));
+                break;
+            case AccountChargeDeclined declined:
+                _answeredCharges.Add(new ChargeId(declined.ChargeId));
                 break;
             case AccountClosed:
                 Status = AccountStatus.Closed;

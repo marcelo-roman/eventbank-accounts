@@ -16,6 +16,8 @@ public sealed class AccountTransaction
 
     public Guid? TransferId { get; init; }
 
+    public string? Description { get; init; }
+
     public string? Detail { get; init; }
 
     public DateTimeOffset OccurredAt { get; init; }

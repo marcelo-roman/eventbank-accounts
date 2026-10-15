@@ -16,7 +16,10 @@ public sealed class AccountReadModelProjection : IProjection<AccountsDbContext>
             dbContext.AccountSummaries.Add(new AccountSummary
             {
                 Id = opened.AccountId,
+                OwnerId = opened.OwnerId,
                 Holder = opened.Holder,
+                Branch = opened.Branch,
+                Number = opened.Number,
                 Currency = opened.Currency,
                 Status = nameof(AccountStatus.Open),
                 Version = envelope.StreamVersion,
@@ -62,6 +65,7 @@ public sealed class AccountReadModelProjection : IProjection<AccountsDbContext>
         TransferDebited debited => -debited.Amount,
         TransferCredited credited => credited.Amount,
         TransferRefunded refunded => refunded.Amount,
+        AccountCharged charged => -charged.Amount,
         _ => 0,
     };
 
@@ -74,6 +78,8 @@ public sealed class AccountReadModelProjection : IProjection<AccountsDbContext>
         TransferCredited credited => Entry(envelope, "TransferIn", credited.Amount, balanceAfter, credited.TransferId),
         TransferCreditDeclined declined => Entry(envelope, "TransferInDeclined", declined.Amount, balanceAfter, declined.TransferId, declined.Reason),
         TransferRefunded refunded => Entry(envelope, "TransferRefund", refunded.Amount, balanceAfter, refunded.TransferId),
+        AccountCharged charged => Entry(envelope, "CardPurchase", -charged.Amount, balanceAfter, description: charged.Description),
+        AccountChargeDeclined declined => Entry(envelope, "CardPurchaseDeclined", -declined.Amount, balanceAfter, description: declined.Description, detail: declined.Reason),
         _ => null,
     };
 
@@ -83,7 +89,8 @@ public sealed class AccountReadModelProjection : IProjection<AccountsDbContext>
         decimal amount,
         decimal balanceAfter,
         Guid? transferId = null,
-        string? detail = null) => new()
+        string? detail = null,
+        string? description = null) => new()
         {
             EventId = envelope.EventId,
             AccountId = ((IAccountEvent)envelope.Event).AccountId,
@@ -92,6 +99,7 @@ public sealed class AccountReadModelProjection : IProjection<AccountsDbContext>
             Amount = amount,
             BalanceAfter = balanceAfter,
             TransferId = transferId,
+            Description = description,
             Detail = detail,
             OccurredAt = envelope.RecordedAt,
         };

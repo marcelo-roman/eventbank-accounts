@@ -22,6 +22,9 @@ namespace EventBank.Accounts.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.HasSequence("account_numbers")
+                .StartsAt(100001L);
+
             modelBuilder.Entity("EventBank.Accounts.Infrastructure.Persistence.AccountSummary", b =>
                 {
                     b.Property<Guid>("Id")
@@ -34,6 +37,12 @@ namespace EventBank.Accounts.Infrastructure.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("balance");
 
+                    b.Property<string>("Branch")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("character varying(4)")
+                        .HasColumnName("branch");
+
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(3)
@@ -42,13 +51,23 @@ namespace EventBank.Accounts.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Holder")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
                         .HasColumnName("holder");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("number");
 
                     b.Property<DateTimeOffset>("OpenedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("opened_at");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_id");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -66,6 +85,9 @@ namespace EventBank.Accounts.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_account_summaries");
+
+                    b.HasIndex("OwnerId")
+                        .HasDatabaseName("ix_account_summaries_owner_id");
 
                     b.ToTable("account_summaries", (string)null);
                 });
@@ -90,6 +112,11 @@ namespace EventBank.Accounts.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("balance_after");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("description");
 
                     b.Property<string>("Detail")
                         .HasMaxLength(100)
@@ -121,6 +148,25 @@ namespace EventBank.Accounts.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_account_transactions_account_id_version");
 
                     b.ToTable("account_transactions", (string)null);
+                });
+
+            modelBuilder.Entity("EventBank.Accounts.Infrastructure.Persistence.ApprovedCustomer", b =>
+                {
+                    b.Property<Guid>("CustomerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("full_name");
+
+                    b.HasKey("CustomerId")
+                        .HasName("pk_approved_customers");
+
+                    b.ToTable("approved_customers", (string)null);
                 });
 
             modelBuilder.Entity("EventBank.BuildingBlocks.EventSourcing.Subscriptions.SubscriptionCheckpoint", b =>

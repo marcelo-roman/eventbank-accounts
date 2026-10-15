@@ -1,6 +1,6 @@
 # EventBank Accounts
 
-The Accounts microservice of [EventBank](https://github.com/marcelo-roman/eventbank-platform). It owns bank accounts: opening, deposits, withdrawals, closing, and its side of every transfer. Each account is an event-sourced aggregate; no balance is stored anywhere.
+The Accounts microservice of [EventBank](https://github.com/marcelo-roman/eventbank-platform). It owns bank accounts: opening, deposits, withdrawals, closing, its side of every transfer, and the charges of card purchases. Each account is an event-sourced aggregate; no balance is stored anywhere.
 
 ## Domain
 
@@ -8,16 +8,23 @@ The Accounts microservice of [EventBank](https://github.com/marcelo-roman/eventb
 
 | Event | Raised when |
 | --- | --- |
-| `AccountOpened` | An account is opened with a holder and a currency |
+| `AccountOpened` | An account is opened for an approved customer, with a holder, a currency and a branch/number |
 | `FundsDeposited` / `FundsWithdrawn` | Money moves in or out; a withdrawal never takes the balance below zero |
 | `TransferDebited` / `TransferDebitDeclined` | The account pays for a transfer, or records why it could not |
 | `TransferCredited` / `TransferCreditDeclined` | The account receives a transfer, or records why it could not |
 | `TransferRefunded` | A debited transfer is compensated |
+| `AccountCharged` / `AccountChargeDeclined` | A card purchase is charged, or declined with a reason |
 | `AccountClosed` | The account is closed; only a zero balance can be closed |
 
 A declined debit is a fact, not an exception, and every transfer reply is idempotent: a redelivered `DebitAccount` for a transfer the account already answered changes nothing.
 
 `Money`, `Currency` and `AccountHolder` validate input on the way in; events carry primitives so the stored history never depends on value-object rules.
+
+Account numbers come from a PostgreSQL sequence and carry a modulo-11 check digit (`0001/100001-2`). The checking account that opens when a customer is approved gets a deterministic id derived from the customer, so a redelivered `CustomerApproved` finds it instead of opening a second one.
+
+## Who can do what
+
+Every endpoint needs a Keycloak token. Only the owner moves money; operators read every account, including its events and replays, but cannot move money. `AccountAccess` in the application layer enforces it and answers 403.
 
 ## Layers
 
@@ -34,7 +41,7 @@ A declined debit is a fact, not an exception, and every transfer reply is idempo
 
 | Method | Path | Side |
 | --- | --- | --- |
-| `POST` | `/accounts` | command |
+| `POST` | `/accounts` | command; opens another account for an approved customer |
 | `POST` | `/accounts/{id}/deposits`, `/withdrawals`, `/close` | command |
 | `GET` | `/accounts`, `/accounts/{id}`, `/accounts/{id}/transactions` | read model |
 | `GET` | `/accounts/{id}/events` | event stream |
@@ -46,7 +53,7 @@ Commands answer with the new stream version, so a client can wait until the read
 
 ## Messages
 
-Consumes `DebitAccount`, `CreditAccount` and `RefundAccount`. Publishes `AccountOpened`, `AccountClosed`, `AccountDebited`, `AccountDebitDeclined`, `AccountCredited`, `AccountCreditDeclined` and `AccountRefunded`, all from [eventbank-contracts](https://github.com/marcelo-roman/eventbank-contracts). Integration messages are produced by a subscription on the event store, so a message goes out if and only if its event was stored.
+Consumes `CustomerApproved`, `DebitAccount`, `CreditAccount`, `RefundAccount` and `ChargeAccount`. Publishes `AccountOpened`, `AccountClosed`, `AccountDebited`, `AccountDebitDeclined`, `AccountCredited`, `AccountCreditDeclined`, `AccountRefunded`, `AccountCharged` and `AccountChargeDeclined`, all from [eventbank-contracts](https://github.com/marcelo-roman/eventbank-contracts). Integration messages are produced by a subscription on the event store, so a message goes out if and only if its event was stored.
 
 ## Running
 

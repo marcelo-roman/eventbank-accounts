@@ -9,7 +9,10 @@ internal static class AccountHistory
     public static readonly TransferId Payout = new(Guid.Parse("0199a000-0000-7000-8000-0000000000aa"));
     public static readonly Currency Real = Currency.From("BRL");
 
-    public static readonly AccountOpened Opened = new(Alice.Value, "Alice Martins", "BRL");
+    public static readonly OwnerId Owner = new(Guid.Parse("0199a000-0000-7000-8000-0000000000c1"));
+    public static readonly AccountNumber Number = AccountNumber.FromSequence(100001);
+
+    public static readonly AccountOpened Opened = new(Alice.Value, Owner.Value, "Alice Martins", "BRL", "0001", Number.Number);
 
     public static BankAccount Given(params IDomainEvent[] history)
     {

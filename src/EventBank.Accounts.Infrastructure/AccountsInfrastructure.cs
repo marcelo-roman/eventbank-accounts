@@ -1,3 +1,4 @@
+using EventBank.Accounts.Application.Ports;
 using EventBank.Accounts.Application.Queries;
 using EventBank.Accounts.Domain;
 using EventBank.Accounts.Infrastructure.Integration;
@@ -23,6 +24,8 @@ public static class AccountsInfrastructure
         services.AddProjectionSubscription<AccountsDbContext>();
         services.AddIntegrationEventPublishing<AccountsDbContext, AccountsIntegrationEventMapper>();
         services.AddScoped<IAccountReadStore, EfAccountReadStore>();
+        services.AddScoped<IAccountNumbers, EfAccountNumbers>();
+        services.AddScoped<IApprovedCustomers, EfApprovedCustomers>();
         services.AddRabbitMq(configuration);
 
         return services;

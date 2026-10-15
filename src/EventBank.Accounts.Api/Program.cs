@@ -15,7 +15,9 @@ builder.Services
     .AddAccountsInfrastructure(builder.Configuration)
     .AddMessageHandler<DebitAccount, DebitAccountConsumer>()
     .AddMessageHandler<CreditAccount, CreditAccountConsumer>()
-    .AddMessageHandler<RefundAccount, RefundAccountConsumer>();
+    .AddMessageHandler<RefundAccount, RefundAccountConsumer>()
+    .AddMessageHandler<ChargeAccount, ChargeAccountConsumer>()
+    .AddMessageHandler<CustomerApproved, CustomerApprovedConsumer>();
 
 var app = builder.Build();
 

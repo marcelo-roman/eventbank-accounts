@@ -5,9 +5,16 @@ namespace EventBank.Accounts.Infrastructure.Persistence;
 
 public sealed class EfAccountReadStore(AccountsDbContext dbContext) : IAccountReadStore
 {
-    public async Task<IReadOnlyList<AccountSummaryView>> ListAccounts(CancellationToken cancellationToken) =>
-        await Views(dbContext.AccountSummaries.AsNoTracking().OrderBy(account => account.OpenedAt))
-            .ToListAsync(cancellationToken);
+    public async Task<IReadOnlyList<AccountSummaryView>> ListAccounts(Guid? ownerId, CancellationToken cancellationToken)
+    {
+        var accounts = dbContext.AccountSummaries.AsNoTracking();
+        if (ownerId is { } owner)
+        {
+            accounts = accounts.Where(account => account.OwnerId == owner);
+        }
+
+        return await Views(accounts.OrderBy(account => account.OpenedAt)).ToListAsync(cancellationToken);
+    }
 
     public Task<AccountSummaryView?> FindAccount(Guid accountId, CancellationToken cancellationToken) =>
         Views(dbContext.AccountSummaries.AsNoTracking().Where(account => account.Id == accountId))
@@ -25,6 +32,7 @@ public sealed class EfAccountReadStore(AccountsDbContext dbContext) : IAccountRe
                 transaction.Amount,
                 transaction.BalanceAfter,
                 transaction.TransferId,
+                transaction.Description,
                 transaction.Detail,
                 transaction.OccurredAt))
             .ToListAsync(cancellationToken);
@@ -32,7 +40,10 @@ public sealed class EfAccountReadStore(AccountsDbContext dbContext) : IAccountRe
     private static IQueryable<AccountSummaryView> Views(IQueryable<AccountSummary> accounts) =>
         accounts.Select(account => new AccountSummaryView(
                 account.Id,
+                account.OwnerId,
                 account.Holder,
+                account.Branch,
+                account.Number,
                 account.Currency,
                 account.Balance,
                 account.Status,

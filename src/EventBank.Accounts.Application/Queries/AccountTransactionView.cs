@@ -7,5 +7,6 @@ public sealed record AccountTransactionView(
     decimal Amount,
     decimal BalanceAfter,
     Guid? TransferId,
+    string? Description,
     string? Detail,
     DateTimeOffset OccurredAt);

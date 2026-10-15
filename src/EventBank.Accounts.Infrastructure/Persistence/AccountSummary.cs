@@ -4,7 +4,13 @@ public sealed class AccountSummary
 {
     public Guid Id { get; init; }
 
+    public Guid OwnerId { get; init; }
+
     public required string Holder { get; init; }
+
+    public required string Branch { get; init; }
+
+    public required string Number { get; init; }
 
     public required string Currency { get; init; }
 

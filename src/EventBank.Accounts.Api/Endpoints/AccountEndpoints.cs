@@ -2,6 +2,7 @@ using EventBank.Accounts.Application.Commands;
 using EventBank.Accounts.Application.Queries;
 using EventBank.BuildingBlocks.Application.Cqrs;
 using EventBank.BuildingBlocks.Application.Persistence;
+using EventBank.BuildingBlocks.Application.Security;
 using EventBank.BuildingBlocks.Web;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -11,12 +12,13 @@ public static class AccountEndpoints
 {
     public static IEndpointRouteBuilder MapAccountEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var accounts = endpoints.MapGroup("/accounts").WithTags("Accounts");
+        var accounts = endpoints.MapGroup("/accounts").WithTags("Accounts").RequireAuthorization();
+        var commands = accounts.MapGroup("/").RequireAuthorization(Roles.Customer);
 
-        accounts.MapPost("/", Open);
-        accounts.MapPost("/{accountId:guid}/deposits", Deposit);
-        accounts.MapPost("/{accountId:guid}/withdrawals", Withdraw);
-        accounts.MapPost("/{accountId:guid}/close", Close);
+        commands.MapPost("/", Open);
+        commands.MapPost("/{accountId:guid}/deposits", Deposit);
+        commands.MapPost("/{accountId:guid}/withdrawals", Withdraw);
+        commands.MapPost("/{accountId:guid}/close", Close);
 
         accounts.MapGet("/", List);
         accounts.MapGet("/{accountId:guid}", Get);
@@ -32,7 +34,7 @@ public static class AccountEndpoints
         ICommandHandler<OpenAccount, CommandResult> handler,
         CancellationToken cancellationToken)
     {
-        var result = await handler.Handle(new OpenAccount(request.Holder, request.Currency), cancellationToken);
+        var result = await handler.Handle(new OpenAccount(request.Currency), cancellationToken);
         return TypedResults.Created($"/accounts/{result.Id}", result);
     }
 
